@@ -1,42 +1,40 @@
 /**
  * executeEvent - Main execution dispatcher
  * 
- * After all validations pass, orchestrate state changes.
- * No invariant checks here - validation layer ensures all invariants.
+ * After all validations pass (Phase 1), orchestrate execution phases:
+ * - Phase 4: State Transition (create new immutable state)
+ * - Phase 5: Effects (emit side effects)
+ * - Phase 6: Commit (return result)
  * 
- * Actions:
- * 1. Route to event-specific executor
- * 2. Calculate new state
- * 3. Emit effects
- * 4. Return new state
+ * No validation here - validation layer ensures all invariants hold.
  */
 
 import { EngineState } from "../state/EngineState";
 import { EngineEvent } from "../events/EngineEvent";
-import { EngineResult } from "./EngineResult";
+import { openPosition } from "./openPosition";
+import { closePosition } from "./closePosition";
+import { updatePrices } from "./updatePrices";
 
 export function executeEvent(
   state: EngineState,
   event: EngineEvent
 ): EngineResult {
-  // TODO: Implement event routing
-  // TODO: Each case calls type-specific executor
-  // TODO: Executor returns EngineResult
-  
   try {
     switch (event.type) {
       case "OPEN_POSITION":
-        // TODO: return openPosition(state, event)
-        break;
+        return openPosition(state, event as any);
       case "CLOSE_POSITION":
-        // TODO: return closePosition(state, event)
-        break;
+        return closePosition(state, event as any);
       case "UPDATE_PRICES":
-        // TODO: return updatePrices(state, event)
-        break;
-      // TODO: Add all other event types
+        return updatePrices(state, event as any);
       default:
-        throw new Error(`Unknown event type: ${(event as any).type}`);
+        return {
+          success: false,
+          error: {
+            code: "UNKNOWN_EVENT_TYPE",
+            message: `Event type ${(event as any).type} not implemented`,
+          },
+        };
     }
   } catch (error) {
     return {
@@ -52,7 +50,7 @@ export function executeEvent(
 export interface EngineResult {
   success: boolean;
   newState?: EngineState;
-  effects?: any[]; // TODO: Define Effect type
+  effects?: any[];
   error?: {
     code: string;
     message: string;

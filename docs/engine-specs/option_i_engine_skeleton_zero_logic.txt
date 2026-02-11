@@ -1,0 +1,140 @@
+# Engine Skeleton — Contract-Enforced (Zero Logic)
+
+> This skeleton is **structural only**. No logic. No calculations. No branching.
+> Every file maps to **exactly one execution phase** from ENGINE_EXECUTION_CONTRACT.md.
+
+---
+
+## /engine
+
+```
+engine/
+├─ runEngine.ts
+├─ ENGINE_EXECUTION_CONTRACT.md
+│
+├─ types/
+│  ├─ EngineState.ts
+│  ├─ EngineEvent.ts
+│  ├─ EngineResult.ts
+│  ├─ EngineError.ts
+│  └─ EngineEffect.ts
+│
+├─ validation/                # Phase 1
+│  ├─ validateAccount.ts
+│  ├─ validatePosition.ts
+│  ├─ validateRisk.ts
+│  └─ index.ts
+│
+├─ domain/
+│  ├─ calculations/           # Phase 2
+│  │  ├─ margin.ts
+│  │  ├─ pnl.ts
+│  │  ├─ fees.ts
+│  │  └─ rounding.ts
+│  │
+│  ├─ invariants/              # Phase 3
+│  │  ├─ financial.ts
+│  │  ├─ position.ts
+│  │  ├─ risk.ts
+│  │  └─ state.ts
+│  └─ index.ts
+│
+├─ execution/                  # Phase 4
+│  ├─ openPosition.ts
+│  ├─ closePosition.ts
+│  ├─ updatePrices.ts
+│  └─ index.ts
+│
+├─ state/                      # Phase 4 (state shapes)
+│  ├─ AccountState.ts
+│  ├─ PositionState.ts
+│  └─ index.ts
+│
+├─ effects/                    # Phase 5
+│  ├─ audit.ts
+│  ├─ persistence.ts
+│  └─ index.ts
+│
+└─ tests/
+   ├─ goldenPaths/
+   │  ├─ GP-1.md
+   │  ├─ GP-2.md
+   │  └─ GP-3.md
+   └─ invariants/
+      ├─ invariant-enforcement-map.md
+      └─ invariant-enforcement-map.json
+```
+
+---
+
+## runEngine.ts (Phase Orchestrator — No Logic)
+
+```ts
+export function runEngine(state, event) {
+  // Phase 0 — Intake (no code)
+
+  // Phase 1 — Validation
+  // validate(event, state)
+
+  // Phase 2 — Calculations
+  // calculateDerivedValues(state, event)
+
+  // Phase 3 — Invariants
+  // assertInvariants(state, derived, event)
+
+  // Phase 4 — State Transition
+  // newState = applyEvent(state, event, derived)
+
+  // Phase 5 — Effects
+  // effects = emitEffects(state, newState, event)
+
+  // Phase 6 — Commit
+  // return result
+}
+```
+
+---
+
+## File-Level Rules (Enforced)
+
+- **validation/**
+  - MAY reject events
+  - MAY read state
+  - MUST NOT mutate state
+
+- **domain/calculations/**
+  - Pure functions only
+  - No branching on policy
+  - No access to execution or effects
+
+- **domain/invariants/**
+  - Assertions only
+  - No calculations
+  - No state mutation
+
+- **execution/**
+  - Applies exactly one event
+  - No calculations
+  - No validations
+
+- **effects/**
+  - Describe effects only
+  - No timestamps
+  - No IDs
+
+---
+
+## Forbidden at Skeleton Level
+
+- No default exports
+- No shared mutable helpers
+- No cross-phase imports
+- No logic placeholders
+
+---
+
+## Status
+
+✅ Option I — Skeleton generated
+
+Next legal move: **Option J — Single invariant implementation (one file, one invariant)**

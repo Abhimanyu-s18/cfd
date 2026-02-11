@@ -12,24 +12,32 @@ import { EngineState } from "../state/EngineState";
 import { AccountState } from "../state/AccountState";
 import { EngineValidationError } from "./validateEvent";
 
+/**
+ * INV-DATA-001 — Account Existence
+ * Phase 1: Structural validation (referential check)
+ * Rule: Account must exist in state before any operation
+ */
 export function validateAccountExists(
   state: EngineState,
   accountId: string
 ): void {
-  // TODO: Verify accountId exists in state
-  if (!accountId) {
+  if (!accountId || !state.accounts[accountId]) {
     throw new EngineValidationError(
       "ACCOUNT_NOT_FOUND",
       "INV-DATA-001",
-      `Account ${accountId} not found`
+      `Account ${accountId} not found in state`
     );
   }
 }
 
+/**
+ * INV-STATE-003 — Account Active Status
+ * Phase 1: Structural validation (status check)
+ * Rule: Account must be ACTIVE to allow trading operations
+ */
 export function validateAccountActive(
   account: AccountState
 ): void {
-  // TODO: Check status is ACTIVE
   if (account.status !== "ACTIVE") {
     throw new EngineValidationError(
       "INVALID_ACCOUNT_STATUS",
@@ -39,15 +47,38 @@ export function validateAccountActive(
   }
 }
 
+/**
+ * validateBalanceNonNegative — OPTION J: FIRST REAL INVARIANT
+ * 
+ * Invariant: INV-FIN-001 - Account Balance Non-Negativity
+ * 
+ * Rule: balance >= 0 (always)
+ * 
+ * Enforcement: PHASE 1 (Structural & Referential Validation)
+ * Reference: ENGINE_EXECUTION_CONTRACT.md § 3 — Phase 1
+ * 
+ * This guard prevents:
+ * - Realized P&L from going negative without triggering stop-out
+ * - Fund removal from creating debt
+ * - Invalid state propagation to later phases
+ * 
+ * When triggered: Events CLOSE_POSITION, REMOVE_FUNDS, UPDATE_PRICES
+ * Golden Path: GP-3 (stop-out scenario)
+ * 
+ * Severity: CRITICAL
+ * Engine bug if violated: NO (indicates calculation or closure error)
+ * 
+ * Pure function: YES (no side effects, no mutation)
+ * Deterministic: YES (same input → same output)
+ */
 export function validateBalanceNonNegative(
   balance: number
 ): void {
-  // TODO: Enforce INV-FIN-001
   if (balance < 0) {
     throw new EngineValidationError(
       "INVALID_BALANCE",
       "INV-FIN-001",
-      "Balance cannot be negative"
+      `Balance must be non-negative; got ${balance}`
     );
   }
 }

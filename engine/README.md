@@ -4,6 +4,8 @@
 **Version:** 1.0  
 **Date:** February 6, 2026
 
+> **📚 Documentation Reference:** See [docs/engine-specs/](../docs/engine-specs/) for detailed engine specifications, contracts, and validation rules.
+
 ---
 
 ## 🧱 Architecture Principles
@@ -210,7 +212,7 @@ Output: EngineResult {
 
 ## 📚 Reference Documents
 
-All behavioral specs are locked in documents:
+All behavioral specs are locked in documents (see [docs/engine-specs/](../docs/engine-specs/)):
 
 - **ENGINE_INVARIANTS.md** — Timeless mathematical rules
 - **ENGINE_VALIDATION_ORDER.md** — Exact validation sequence

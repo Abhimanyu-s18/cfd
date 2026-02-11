@@ -47,7 +47,6 @@ export function runEngine(
         success: false,
         error: {
           code: error.code,
-          invariantId: error.invariantId,
           message: error.message,
         },
       };

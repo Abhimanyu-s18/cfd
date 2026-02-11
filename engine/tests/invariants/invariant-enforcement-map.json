@@ -1,0 +1,380 @@
+[
+  {
+    "invariantId": "INV-FIN-001",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "validation", "file": "validation/validateAccount.ts", "function": "validateBalanceNonNegative" },
+    "violatedByEvents": ["CLOSE_POSITION", "REMOVE_FUNDS", "UPDATE_PRICES"],
+    "provenByGoldenPaths": ["GP-3"],
+    "severity": "CRITICAL",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-FIN-002",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "domain", "file": "domain/calculations/margin.ts", "function": "calculateFreeMargin / assertEquityConsistent" },
+    "violatedByEvents": ["OPEN_POSITION", "CLOSE_POSITION", "UPDATE_PRICES", "ADD_BONUS", "REMOVE_BONUS"],
+    "provenByGoldenPaths": ["GP-1", "GP-2", "GP-3"],
+    "severity": "CRITICAL",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-FIN-003",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "domain", "file": "domain/calculations/margin.ts", "function": "calculateMarginRequired / assertMarginConsistency" },
+    "violatedByEvents": ["OPEN_POSITION", "CLOSE_POSITION", "UPDATE_PRICES"],
+    "provenByGoldenPaths": ["GP-1", "GP-2", "GP-3"],
+    "severity": "CRITICAL",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-FIN-004",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "domain/validation", "file": "domain/calculations/margin.ts / validation/validateRisk.ts", "function": "calculateFreeMargin / validateMarginAvailability" },
+    "violatedByEvents": ["OPEN_POSITION", "UPDATE_PRICES", "CLOSE_POSITION"],
+    "provenByGoldenPaths": ["GP-1", "GP-3"],
+    "severity": "CRITICAL",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-FIN-005",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "domain", "file": "domain/calculations/margin.ts", "function": "calculateMarginLevel" },
+    "violatedByEvents": ["OPEN_POSITION", "UPDATE_PRICES", "CLOSE_POSITION"],
+    "provenByGoldenPaths": ["GP-3"],
+    "severity": "CRITICAL",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-FIN-006",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "domain/invariants", "file": "domain/invariants/financial.ts", "function": "(policy assertions)" },
+    "violatedByEvents": ["ADD_BONUS", "REMOVE_BONUS", "REMOVE_FUNDS"],
+    "provenByGoldenPaths": [],
+    "severity": "POLICY",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-FIN-007",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "execution", "file": "execution/closePosition.ts", "function": "(apply realizedPnL to balance)" },
+    "violatedByEvents": ["CLOSE_POSITION"],
+    "provenByGoldenPaths": ["GP-1", "GP-2"],
+    "severity": "CRITICAL",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-FIN-008",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "domain/invariants", "file": "domain/invariants/financial.ts", "function": "assertTransactionConsistency" },
+    "violatedByEvents": ["ADD_FUNDS", "REMOVE_FUNDS", "CLOSE_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-FIN-009",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "validation", "file": "validation/validateRisk.ts", "function": "validateLeverageLimit" },
+    "violatedByEvents": ["OPEN_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-FIN-010",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "domain", "file": "domain/calculations/margin.ts", "function": "calculateMarginRequired" },
+    "violatedByEvents": ["OPEN_POSITION", "UPDATE_PRICES"],
+    "provenByGoldenPaths": ["GP-1", "GP-2", "GP-3"],
+    "severity": "CRITICAL",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-FIN-011",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "domain", "file": "domain/calculations/pnl.ts", "function": "calculateUnrealizedPnL (LONG)" },
+    "violatedByEvents": ["UPDATE_PRICES", "OPEN_POSITION"],
+    "provenByGoldenPaths": ["GP-1"],
+    "severity": "CRITICAL",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-FIN-012",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "domain", "file": "domain/calculations/pnl.ts", "function": "calculateUnrealizedPnL (SHORT)" },
+    "violatedByEvents": ["UPDATE_PRICES", "OPEN_POSITION"],
+    "provenByGoldenPaths": ["GP-2"],
+    "severity": "CRITICAL",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-FIN-013",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "domain/invariants", "file": "domain/invariants/financial.ts", "function": "(P&L symmetry assertions)" },
+    "violatedByEvents": ["OPEN_POSITION", "UPDATE_PRICES", "CLOSE_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-FIN-014",
+    "category": "FINANCIAL",
+    "enforcedIn": { "layer": "domain", "file": "domain/calculations/pnl.ts", "function": "calculateRealizedPnL" },
+    "violatedByEvents": ["CLOSE_POSITION", "OPEN_POSITION"],
+    "provenByGoldenPaths": ["GP-1", "GP-2"],
+    "severity": "HIGH",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-POS-001",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "domain/invariants", "file": "domain/invariants/position.ts", "function": "assertStatusProgression" },
+    "violatedByEvents": ["OPEN_POSITION", "CLOSE_POSITION", "CANCEL_PENDING_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-POS-002",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "validation", "file": "validation/validatePosition.ts", "function": "validatePositionIdUnique" },
+    "violatedByEvents": ["OPEN_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-POS-003",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "validation", "file": "validation/validatePosition.ts", "function": "validatePositionOwnership" },
+    "violatedByEvents": ["CLOSE_POSITION", "SET_STOP_LOSS", "SET_TAKE_PROFIT", "CANCEL_PENDING_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-POS-004",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "state", "file": "state/PositionState.ts", "function": "readonly fields + domain assertion" },
+    "violatedByEvents": ["(attempts to mutate closed positions)"],
+    "provenByGoldenPaths": [],
+    "severity": "CRITICAL",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-POS-005",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "validation", "file": "validation/validatePosition.ts", "function": "validatePositionSize" },
+    "violatedByEvents": ["OPEN_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "MEDIUM",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-POS-006",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "validation", "file": "validation/validatePosition.ts", "function": "validateEntryPrice" },
+    "violatedByEvents": ["OPEN_POSITION", "CLOSE_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "MEDIUM",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-POS-007",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "validation/domain", "file": "validation/validatePosition.ts / domain/invariants/position.ts", "function": "validateStopLossLogic / assertStopLossLogic" },
+    "violatedByEvents": ["OPEN_POSITION", "SET_STOP_LOSS", "UPDATE_PRICES"],
+    "provenByGoldenPaths": ["GP-2"],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-POS-008",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "validation/domain", "file": "validation/validatePosition.ts / domain/invariants/position.ts", "function": "validateTakeProfitLogic / assertTakeProfitLogic" },
+    "violatedByEvents": ["OPEN_POSITION", "SET_TAKE_PROFIT", "UPDATE_PRICES"],
+    "provenByGoldenPaths": ["GP-1"],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-POS-009",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "validation", "file": "validation/validatePosition.ts", "function": "validatePositionCountLimit" },
+    "violatedByEvents": ["OPEN_POSITION", "UPDATE_ACCOUNT_POLICIES"],
+    "provenByGoldenPaths": [],
+    "severity": "MEDIUM",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-POS-010",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "validation", "file": "validation/validatePosition.ts", "function": "(market lookups / asset class check)" },
+    "violatedByEvents": ["OPEN_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "MEDIUM",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-POS-011",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "validation", "file": "validation/validatePosition.ts", "function": "(closePrice > 0 check)" },
+    "violatedByEvents": ["CLOSE_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "MEDIUM",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-POS-012",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "state/effects", "file": "state/PositionState.ts / effects/audit.ts", "function": "closedBy field + audit effect" },
+    "violatedByEvents": ["CLOSE_POSITION", "UPDATE_PRICES", "marginEnforcement"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-POS-013",
+    "category": "POSITION",
+    "enforcedIn": { "layer": "validation", "file": "validation/validatePosition.ts", "function": "(admin metadata checks)" },
+    "violatedByEvents": ["CLOSE_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-RISK-004",
+    "category": "RISK",
+    "enforcedIn": { "layer": "domain/invariants", "file": "domain/invariants/risk.ts", "function": "assertMarginLevelSafe" },
+    "violatedByEvents": ["OPEN_POSITION", "UPDATE_PRICES"],
+    "provenByGoldenPaths": ["GP-3"],
+    "severity": "CRITICAL",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-RISK-005",
+    "category": "RISK",
+    "enforcedIn": { "layer": "domain/invariants", "file": "domain/invariants/risk.ts", "function": "assertStopLossTrigger" },
+    "violatedByEvents": ["UPDATE_PRICES"],
+    "provenByGoldenPaths": ["GP-2"],
+    "severity": "HIGH",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-RISK-006",
+    "category": "RISK",
+    "enforcedIn": { "layer": "domain/invariants", "file": "domain/invariants/risk.ts", "function": "assertTakeProfitTrigger" },
+    "violatedByEvents": ["UPDATE_PRICES"],
+    "provenByGoldenPaths": ["GP-1"],
+    "severity": "HIGH",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-RISK-007",
+    "category": "RISK",
+    "enforcedIn": { "layer": "domain/invariants", "file": "domain/invariants/risk.ts", "function": "assertSLTPExclusivity" },
+    "violatedByEvents": ["UPDATE_PRICES"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-RISK-008",
+    "category": "RISK",
+    "enforcedIn": { "layer": "validation", "file": "validation/validateRisk.ts", "function": "validatePositionMinSize" },
+    "violatedByEvents": ["OPEN_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "MEDIUM",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-RISK-009",
+    "category": "RISK",
+    "enforcedIn": { "layer": "validation", "file": "validation/validateRisk.ts", "function": "validatePositionMaxSize" },
+    "violatedByEvents": ["OPEN_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "MEDIUM",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-RISK-010",
+    "category": "RISK",
+    "enforcedIn": { "layer": "validation", "file": "validation/validateRisk.ts", "function": "validateExposure" },
+    "violatedByEvents": ["OPEN_POSITION", "UPDATE_PRICES"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-STATE-001",
+    "category": "STATE",
+    "enforcedIn": { "layer": "domain/invariants", "file": "domain/invariants/state.ts", "function": "assertStateConsistency" },
+    "violatedByEvents": ["ALL"],
+    "provenByGoldenPaths": [],
+    "severity": "CRITICAL",
+    "engineBugIfViolated": true
+  },
+  {
+    "invariantId": "INV-STATE-002",
+    "category": "STATE",
+    "enforcedIn": { "layer": "domain/invariants", "file": "domain/invariants/state.ts", "function": "assertStatusTransition" },
+    "violatedByEvents": ["UPDATE_ACCOUNT_STATUS", "marginEnforcement"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-STATE-003",
+    "category": "STATE",
+    "enforcedIn": { "layer": "validation", "file": "validation/validateAccount.ts", "function": "validateAccountActive" },
+    "violatedByEvents": ["OPEN_POSITION", "ADD_FUNDS", "REMOVE_FUNDS"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-DATA-001",
+    "category": "DATA",
+    "enforcedIn": { "layer": "validation", "file": "validation/validateAccount.ts", "function": "validateAccountExists" },
+    "violatedByEvents": ["ALL"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-DATA-002",
+    "category": "DATA",
+    "enforcedIn": { "layer": "effects", "file": "effects/audit.ts", "function": "audit record includes reference" },
+    "violatedByEvents": ["CLOSE_POSITION", "OPEN_POSITION", "funds events"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-DATA-003",
+    "category": "DATA",
+    "enforcedIn": { "layer": "domain/invariants", "file": "domain/invariants/state.ts", "function": "assertTemporalOrdering" },
+    "violatedByEvents": ["CLOSE_POSITION", "UPDATE_PRICES"],
+    "provenByGoldenPaths": [],
+    "severity": "HIGH",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-DATA-004",
+    "category": "DATA",
+    "enforcedIn": { "layer": "validation", "file": "validation/validateRisk.ts", "function": "validateMarketPrice" },
+    "violatedByEvents": ["UPDATE_PRICES", "OPEN_POSITION"],
+    "provenByGoldenPaths": [],
+    "severity": "MEDIUM",
+    "engineBugIfViolated": false
+  },
+  {
+    "invariantId": "INV-DATA-005",
+    "category": "DATA",
+    "enforcedIn": { "layer": "domain/calculations", "file": "domain/calculations/rounding.ts", "function": "formatCurrency / bankersRound" },
+    "violatedByEvents": ["ANY money math"],
+    "provenByGoldenPaths": [],
+    "severity": "MEDIUM",
+    "engineBugIfViolated": true
+  }
+]

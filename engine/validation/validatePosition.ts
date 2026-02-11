@@ -17,30 +17,72 @@
 import { EngineState } from "../state/EngineState";
 import { EngineValidationError } from "./validateEvent";
 
+/**
+ * INV-POS-002 — Position ID Uniqueness
+ * Phase 1: Structural validation (uniqueness check)
+ * Rule: Position ID must be globally unique across all accounts
+ */
 export function validatePositionIdUnique(
   state: EngineState,
   accountId: string,
   positionId: string
 ): void {
-  // TODO: Check positionId not in any account positions
-  // Invariant: INV-POS-002
+  for (const acctId in state.accounts) {
+    const account = state.accounts[acctId];
+    if (account.positions && account.positions[positionId]) {
+      throw new EngineValidationError(
+        "POSITION_ID_DUPLICATE",
+        "INV-POS-002",
+        `Position ID ${positionId} already exists`
+      );
+    }
+  }
 }
 
+/**
+ * INV-POS-003 — Position Exists
+ * Phase 1: Structural validation (referential check)
+ * Rule: Position must exist before referencing in operations
+ */
 export function validatePositionExists(
   state: EngineState,
   positionId: string
 ): void {
-  // TODO: Find position across all accounts
-  // Invariant: INV-POS-003
+  let found = false;
+  for (const accountId in state.accounts) {
+    const account = state.accounts[accountId];
+    if (account.positions && account.positions[positionId]) {
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    throw new EngineValidationError(
+      "POSITION_NOT_FOUND",
+      "INV-POS-003",
+      `Position ${positionId} not found`
+    );
+  }
 }
 
+/**
+ * INV-POS-003 — Position Ownership
+ * Phase 1: Structural validation (referential check)
+ * Rule: Position must belong to the accountId making the operation
+ */
 export function validatePositionOwnership(
   state: EngineState,
   positionId: string,
   accountId: string
 ): void {
-  // TODO: Verify position belongs to account
-  // Invariant: INV-POS-003
+  const account = state.accounts[accountId];
+  if (!account || !account.positions || !account.positions[positionId]) {
+    throw new EngineValidationError(
+      "POSITION_NOT_OWNED",
+      "INV-POS-003",
+      `Position ${positionId} does not belong to account ${accountId}`
+    );
+  }
 }
 
 export function validatePositionSize(size: number): void {
@@ -67,29 +109,82 @@ export function validateEntryPrice(price: number): void {
   }
 }
 
+/**
+ * INV-POS-007 — Stop Loss Logic
+ * Phase 1: Structural validation (correctness check)
+ * Rule: Stop loss price must be on loss side of entry price
+ *  - LONG: stopLoss < entryPrice
+ *  - SHORT: stopLoss > entryPrice
+ */
 export function validateStopLossLogic(
   side: "LONG" | "SHORT",
   entryPrice: number,
   stopLoss: number | undefined
 ): void {
-  // TODO: Implement INV-POS-007
-  // LONG: SL must be < entryPrice
-  // SHORT: SL must be > entryPrice
+  if (stopLoss === undefined) return; // Optional
+  if (side === "LONG" && stopLoss >= entryPrice) {
+    throw new EngineValidationError(
+      "INVALID_STOP_LOSS",
+      "INV-POS-007",
+      `LONG stop loss ${stopLoss} must be below entry price ${entryPrice}`
+    );
+  }
+  if (side === "SHORT" && stopLoss <= entryPrice) {
+    throw new EngineValidationError(
+      "INVALID_STOP_LOSS",
+      "INV-POS-007",
+      `SHORT stop loss ${stopLoss} must be above entry price ${entryPrice}`
+    );
+  }
 }
 
+/**
+ * INV-POS-008 — Take Profit Logic
+ * Phase 1: Structural validation (correctness check)
+ * Rule: Take profit price must be on profit side of entry price
+ *  - LONG: takeProfit > entryPrice
+ *  - SHORT: takeProfit < entryPrice
+ */
 export function validateTakeProfitLogic(
   side: "LONG" | "SHORT",
   entryPrice: number,
   takeProfit: number | undefined
 ): void {
-  // TODO: Implement INV-POS-008
-  // LONG: TP must be > entryPrice
-  // SHORT: TP must be < entryPrice
+  if (takeProfit === undefined) return; // Optional
+  if (side === "LONG" && takeProfit <= entryPrice) {
+    throw new EngineValidationError(
+      "INVALID_TAKE_PROFIT",
+      "INV-POS-008",
+      `LONG take profit ${takeProfit} must be above entry price ${entryPrice}`
+    );
+  }
+  if (side === "SHORT" && takeProfit >= entryPrice) {
+    throw new EngineValidationError(
+      "INVALID_TAKE_PROFIT",
+      "INV-POS-008",
+      `SHORT take profit ${takeProfit} must be below entry price ${entryPrice}`
+    );
+  }
 }
 
+/**
+ * INV-POS-009 — Position Count Limit
+ * Phase 1: Structural validation (account policy check)
+ * Rule: Account cannot exceed max positions configured in policy
+ */
 export function validatePositionCountLimit(
   state: EngineState,
   accountId: string
 ): void {
-  // TODO: Enforce INV-POS-009
+  const account = state.accounts[accountId];
+  if (!account) return; // Account validation happens elsewhere
+  const maxPositions = account.policy?.maxOpenPositions ?? 20;
+  const currentCount = account.positions ? Object.keys(account.positions).length : 0;
+  if (currentCount >= maxPositions) {
+    throw new EngineValidationError(
+      "POSITION_COUNT_EXCEEDED",
+      "INV-POS-009",
+      `Account has ${currentCount} open positions; max ${maxPositions} allowed`
+    );
+  }
 }
