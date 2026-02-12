@@ -13,6 +13,8 @@
  *
  * Proven by Golden Paths: GP-1 (take-profit), GP-3 (stop-out)
  */
+
+import { bankersRound } from "./rounding";
 export function calculateUnrealizedPnLLong(
   size: number,
   entryPrice: number,
@@ -198,10 +200,8 @@ export function calculateRealizedPnL(
  * Deterministic: YES
  * 
  * @param value - Numeric value to round
- * @returns Value rounded to 2 decimal places
+ * @returns Value rounded to 2 decimal places using banker's rounding
  */
 export function roundTo2Decimals(value: number): number {
-  // JavaScript's Math.round uses banker's rounding natively
-  // Multiply by 100, round, divide by 100
-  return Math.round(value * 100) / 100;
+  return bankersRound(value, 2);
 }

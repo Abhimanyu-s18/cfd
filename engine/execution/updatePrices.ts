@@ -25,6 +25,7 @@ import { EngineResult } from "./executeEvent";
 import { calculateUnrealizedPnL } from "../domain/calculations/pnl";
 import { calculateRealizedPnL } from "../domain/calculations/pnl";
 import { assertStopLossTrigger, assertTakeProfitTrigger } from "../domain/invariants/risk";
+import { getLiquidationOrder } from "../domain/priority/liquidationOrder";
 import { AccountState } from "../state/AccountState";
 
 export function updatePrices(
@@ -37,15 +38,15 @@ export function updatePrices(
     // PHASE 4: State Transition
     // Update markets
     const newMarkets = new Map(state.markets);
-    for (const marketId in prices) {
+    prices.forEach((price: number, marketId: string) => {
       const market = newMarkets.get(marketId);
       if (market) {
         newMarkets.set(marketId, {
           ...market,
-          markPrice: prices[marketId],
+          markPrice: price,
         });
       }
-    }
+    });
 
     // Recalculate positions and check triggers
     const newPositions = new Map(state.positions);
@@ -168,17 +169,88 @@ export function updatePrices(
 
     const newEquity = totalBalance + state.account.bonus + totalUnrealizedPnL;
     const newFreeMargin = newEquity - totalMarginUsed;
-    const newMarginLevel = totalMarginUsed > 0 ? (newEquity / totalMarginUsed) * 100 : null;
+    let newMarginLevel = totalMarginUsed > 0 ? (newEquity / totalMarginUsed) * 100 : null;
 
-    // Check margin level for stop-out (< 20%)
+    // Check margin level for stop-out (< 20%) and perform liquidation cascade
     if (newMarginLevel !== null && newMarginLevel < 20) {
       marginCallTriggered = true;
+
+      // Gather open positions and sort by most-losing first (lowest unrealizedPnL)
+      const openPositions: Array<any> = [];
+      newPositions.forEach((pos) => {
+        if (pos.status !== "CLOSED") {
+          openPositions.push(pos);
+        }
+      });
+
+      // Sort by liquidation priority: most-loss first, oldest position on tie
+      const orderedPositions = getLiquidationOrder(openPositions);
+
+      const liquidated: Array<any> = [];
+
+      // Liquidate until margin level recovers >= 20% or no positions left
+      for (const pos of orderedPositions) {
+        const market = newMarkets.get(pos.marketId);
+        const closePrice = market ? market.markPrice : undefined;
+        const realizedPnL = closePrice
+          ? calculateRealizedPnL(
+              pos.side,
+              pos.entryPrice,
+              closePrice,
+              pos.size,
+              pos.commissionFee,
+              pos.swapFee || 0
+            )
+          : 0;
+
+        const closedPosition = {
+          ...pos,
+          status: "CLOSED" as const,
+          closedPrice: closePrice,
+          closedAt: timestamp,
+          realizedPnL,
+          closedBy: "MARGIN_CALL" as const,
+        };
+
+        newPositions.set(pos.positionId, closedPosition);
+        liquidated.push({ positionId: pos.positionId, realizedPnL, price: closePrice });
+
+        // Update running totals after each liquidation
+        totalBalance += realizedPnL;
+        totalUnrealizedPnL = 0;
+        totalMarginUsed = 0;
+        newPositions.forEach((p) => {
+          if (p.status !== "CLOSED") {
+            totalUnrealizedPnL += p.unrealizedPnL || 0;
+            totalMarginUsed += p.marginUsed || 0;
+          }
+        });
+
+        // Recalculate margin level
+        const interimEquity = totalBalance + state.account.bonus + totalUnrealizedPnL;
+        const interimMarginLevel = totalMarginUsed > 0 ? (interimEquity / totalMarginUsed) * 100 : null;
+
+        effects.push({
+          type: "PositionLiquidated",
+          positionId: pos.positionId,
+          price: closePrice,
+          realizedPnL,
+        });
+
+        if (interimMarginLevel === null || interimMarginLevel >= 20) {
+          // Sufficiently recovered
+          newMarginLevel = interimMarginLevel;
+          break;
+        }
+      }
+
+      // Emit StopOut effect summarizing liquidation
       effects.push({
         type: "StopOut",
         marginLevel: newMarginLevel,
-        message: "Account stopped out - all positions liquidated",
+        message: "Account stopped out - positions liquidated",
+        liquidated,
       });
-      // Note: In real implementation, would liquidate all positions here
     }
 
     const updatedAccount: AccountState = {

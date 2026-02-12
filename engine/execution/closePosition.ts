@@ -18,7 +18,6 @@
 import { EngineState } from "../state/EngineState";
 import { EngineResult } from "./executeEvent";
 import { calculateRealizedPnL } from "../domain/calculations/pnl";
-import { calculateUnrealizedPnL } from "../domain/calculations/pnl";
 import { AccountState } from "../state/AccountState";
 
 export function closePosition(
@@ -26,7 +25,7 @@ export function closePosition(
   event: any
 ): EngineResult {
   try {
-    const { accountId, positionId, closePrice, closedBy, timestamp } = event;
+    const { positionId, closePrice, closedBy, timestamp } = event;
 
     // Get position to close
     const position = state.positions.get(positionId);

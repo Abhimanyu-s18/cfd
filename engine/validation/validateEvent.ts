@@ -30,7 +30,6 @@
 
 import { EngineState } from "../state/EngineState";
 import { EngineEvent } from "../events/EngineEvent";
-import { validateBalanceNonNegative } from "./validateAccount";
 
 export class EngineValidationError extends Error {
   constructor(
@@ -209,6 +208,14 @@ function validateOpenPosition(
       );
     }
   }
+
+  // Step 12: Exposure per Asset Class (if defined on market)
+  // Note: maxExposure field not yet added to MarketState
+  // TODO: Implement when MarketState.maxExposure is defined
+  
+  // Step 13: Account-level Total Exposure (if defined)
+  // Note: maxTotalExposure field not yet added to AccountState
+  // TODO: Implement when AccountState.maxTotalExposure is defined
 }
 
 /**
@@ -294,6 +301,457 @@ function validateUpdatePrices(
   }
 }
 
+/**
+ * validateAddFunds — EVENT-SPECIFIC VALIDATION
+ */
+function validateAddFunds(
+  state: EngineState,
+  event: any
+): void {
+  const { accountId, amount, adminUserId } = event;
+
+  // Step 1: Account exists
+  if (!state.account || state.account.accountId !== accountId) {
+    throw new EngineValidationError(
+      "ACCOUNT_NOT_FOUND",
+      "INV-DATA-001",
+      `Account ${accountId} does not match engine state`
+    );
+  }
+
+  // Step 2: Amount validation
+  if (amount <= 0) {
+    throw new EngineValidationError(
+      "INVALID_EVENT",
+      "INV-FIN-008",
+      "Addition amount must be positive"
+    );
+  }
+
+  // Step 3: Admin metadata
+  if (!adminUserId) {
+    throw new EngineValidationError(
+      "INVALID_EVENT",
+      "INV-STATE-005",
+      "Admin user ID required for ADD_FUNDS"
+    );
+  }
+}
+
+/**
+ * validateRemoveFunds — EVENT-SPECIFIC VALIDATION
+ */
+function validateRemoveFunds(
+  state: EngineState,
+  event: any
+): void {
+  const { accountId, amount, adminUserId } = event;
+
+  // Step 1: Account exists
+  if (!state.account || state.account.accountId !== accountId) {
+    throw new EngineValidationError(
+      "ACCOUNT_NOT_FOUND",
+      "INV-DATA-001",
+      `Account ${accountId} does not match engine state`
+    );
+  }
+
+  // Step 2: Amount validation
+  if (amount <= 0) {
+    throw new EngineValidationError(
+      "INVALID_EVENT",
+      "INV-FIN-008",
+      "Removal amount must be positive"
+    );
+  }
+
+  // Step 3: Sufficient balance
+  if (amount > state.account.freeMargin) {
+    throw new EngineValidationError(
+      "INSUFFICIENT_BALANCE",
+      "INV-FIN-001",
+      `Removal amount ${amount} exceeds free margin ${state.account.freeMargin}`
+    );
+  }
+
+  // Step 4: Balance remains non-negative after removal
+  const balanceAfter = state.account.balance - amount;
+  if (balanceAfter < 0) {
+    throw new EngineValidationError(
+      "INVALID_BALANCE",
+      "INV-FIN-001",
+      `Balance would be negative after removal: ${balanceAfter}`
+    );
+  }
+
+  // Step 5: Admin metadata
+  if (!adminUserId) {
+    throw new EngineValidationError(
+      "INVALID_EVENT",
+      "INV-STATE-005",
+      "Admin user ID required for REMOVE_FUNDS"
+    );
+  }
+}
+
+/**
+ * validateAddBonus — EVENT-SPECIFIC VALIDATION
+ */
+function validateAddBonus(
+  state: EngineState,
+  event: any
+): void {
+  const { accountId, amount, adminUserId } = event;
+
+  // Step 1: Account exists
+  if (!state.account || state.account.accountId !== accountId) {
+    throw new EngineValidationError(
+      "ACCOUNT_NOT_FOUND",
+      "INV-DATA-001",
+      `Account ${accountId} does not match engine state`
+    );
+  }
+
+  // Step 2: Amount validation
+  if (amount <= 0) {
+    throw new EngineValidationError(
+      "INVALID_EVENT",
+      "INV-FIN-008",
+      "Bonus amount must be positive"
+    );
+  }
+
+  // Step 3: Admin metadata
+  if (!adminUserId) {
+    throw new EngineValidationError(
+      "INVALID_EVENT",
+      "INV-STATE-005",
+      "Admin user ID required for ADD_BONUS"
+    );
+  }
+}
+
+/**
+ * validateRemoveBonus — EVENT-SPECIFIC VALIDATION
+ */
+function validateRemoveBonus(
+  state: EngineState,
+  event: any
+): void {
+  const { accountId, amount, adminUserId } = event;
+
+  // Step 1: Account exists
+  if (!state.account || state.account.accountId !== accountId) {
+    throw new EngineValidationError(
+      "ACCOUNT_NOT_FOUND",
+      "INV-DATA-001",
+      `Account ${accountId} does not match engine state`
+    );
+  }
+
+  // Step 2: Amount validation
+  if (amount <= 0) {
+    throw new EngineValidationError(
+      "INVALID_EVENT",
+      "INV-FIN-008",
+      "Bonus removal amount must be positive"
+    );
+  }
+
+  // Step 3: Sufficient bonus available
+  if (!state.account.bonus || amount > state.account.bonus) {
+    throw new EngineValidationError(
+      "INSUFFICIENT_BONUS",
+      "INV-FIN-011",
+      `Removal amount ${amount} exceeds available bonus ${state.account.bonus || 0}`
+    );
+  }
+
+  // Step 4: Admin metadata
+  if (!adminUserId) {
+    throw new EngineValidationError(
+      "INVALID_EVENT",
+      "INV-STATE-005",
+      "Admin user ID required for REMOVE_BONUS"
+    );
+  }
+}
+
+/**
+ * validateSetStopLoss — EVENT-SPECIFIC VALIDATION
+ */
+function validateSetStopLoss(
+  state: EngineState,
+  event: any
+): void {
+  const { accountId, positionId, stopLoss } = event;
+
+  // Step 1: Account exists
+  if (!state.account || state.account.accountId !== accountId) {
+    throw new EngineValidationError(
+      "ACCOUNT_NOT_FOUND",
+      "INV-DATA-001",
+      `Account ${accountId} does not match engine state`
+    );
+  }
+
+  // Step 2: Position exists
+  if (!state.positions || !state.positions.has(positionId)) {
+    throw new EngineValidationError(
+      "POSITION_NOT_FOUND",
+      "INV-POS-003",
+      `Position ${positionId} does not exist`
+    );
+  }
+
+  const position = state.positions.get(positionId)!;
+
+  // Step 3: Position is open
+  if (position.status !== "OPEN") {
+    throw new EngineValidationError(
+      "POSITION_NOT_OPEN",
+      "INV-POS-001",
+      `Position ${positionId} is not open (status: ${position.status})`
+    );
+  }
+
+  // Step 4: SL logic if provided
+  if (stopLoss !== undefined && stopLoss !== null) {
+    if (stopLoss <= 0) {
+      throw new EngineValidationError(
+        "INVALID_STOP_LOSS",
+        "INV-POS-007",
+        `Stop loss must be positive, got ${stopLoss}`
+      );
+    }
+
+    if (position.side === "LONG" && stopLoss >= position.entryPrice) {
+      throw new EngineValidationError(
+        "INVALID_STOP_LOSS",
+        "INV-POS-007",
+        `LONG stop loss ${stopLoss} must be below entry price ${position.entryPrice}`
+      );
+    }
+
+    if (position.side === "SHORT" && stopLoss <= position.entryPrice) {
+      throw new EngineValidationError(
+        "INVALID_STOP_LOSS",
+        "INV-POS-007",
+        `SHORT stop loss ${stopLoss} must be above entry price ${position.entryPrice}`
+      );
+    }
+  }
+  // stopLoss can be null to remove existing SL - this is allowed
+}
+
+/**
+ * validateSetTakeProfit — EVENT-SPECIFIC VALIDATION
+ */
+function validateSetTakeProfit(
+  state: EngineState,
+  event: any
+): void {
+  const { accountId, positionId, takeProfit } = event;
+
+  // Step 1: Account exists
+  if (!state.account || state.account.accountId !== accountId) {
+    throw new EngineValidationError(
+      "ACCOUNT_NOT_FOUND",
+      "INV-DATA-001",
+      `Account ${accountId} does not match engine state`
+    );
+  }
+
+  // Step 2: Position exists
+  if (!state.positions || !state.positions.has(positionId)) {
+    throw new EngineValidationError(
+      "POSITION_NOT_FOUND",
+      "INV-POS-003",
+      `Position ${positionId} does not exist`
+    );
+  }
+
+  const position = state.positions.get(positionId)!;
+
+  // Step 3: Position is open
+  if (position.status !== "OPEN") {
+    throw new EngineValidationError(
+      "POSITION_NOT_OPEN",
+      "INV-POS-001",
+      `Position ${positionId} is not open (status: ${position.status})`
+    );
+  }
+
+  // Step 4: TP logic if provided
+  if (takeProfit !== undefined && takeProfit !== null) {
+    if (takeProfit <= 0) {
+      throw new EngineValidationError(
+        "INVALID_TAKE_PROFIT",
+        "INV-POS-008",
+        `Take profit must be positive, got ${takeProfit}`
+      );
+    }
+
+    if (position.side === "LONG" && takeProfit <= position.entryPrice) {
+      throw new EngineValidationError(
+        "INVALID_TAKE_PROFIT",
+        "INV-POS-008",
+        `LONG take profit ${takeProfit} must be above entry price ${position.entryPrice}`
+      );
+    }
+
+    if (position.side === "SHORT" && takeProfit >= position.entryPrice) {
+      throw new EngineValidationError(
+        "INVALID_TAKE_PROFIT",
+        "INV-POS-008",
+        `SHORT take profit ${takeProfit} must be below entry price ${position.entryPrice}`
+      );
+    }
+  }
+  // takeProfit can be null to remove existing TP - this is allowed
+}
+
+/**
+ * validateCancelPending — EVENT-SPECIFIC VALIDATION
+ */
+function validateCancelPending(
+  state: EngineState,
+  event: any
+): void {
+  const { accountId, positionId } = event;
+
+  // Step 1: Account exists
+  if (!state.account || state.account.accountId !== accountId) {
+    throw new EngineValidationError(
+      "ACCOUNT_NOT_FOUND",
+      "INV-DATA-001",
+      `Account ${accountId} does not match engine state`
+    );
+  }
+
+  // Step 2: Position exists
+  if (!state.positions || !state.positions.has(positionId)) {
+    throw new EngineValidationError(
+      "POSITION_NOT_FOUND",
+      "INV-POS-003",
+      `Position ${positionId} does not exist`
+    );
+  }
+
+  const position = state.positions.get(positionId)!;
+
+  // Step 3: Position must be in PENDING status
+  if (position.status !== "PENDING") {
+    throw new EngineValidationError(
+      "POSITION_NOT_PENDING",
+      "INV-POS-001",
+      `Position ${positionId} must be PENDING to cancel; current status: ${position.status}`
+    );
+  }
+}
+
+/**
+ * validateUpdateAccountStatus — EVENT-SPECIFIC VALIDATION
+ */
+function validateUpdateAccountStatus(
+  state: EngineState,
+  event: any
+): void {
+  const { accountId, status, adminUserId } = event;
+
+  // Step 1: Account exists
+  if (!state.account || state.account.accountId !== accountId) {
+    throw new EngineValidationError(
+      "ACCOUNT_NOT_FOUND",
+      "INV-DATA-001",
+      `Account ${accountId} does not match engine state`
+    );
+  }
+
+  // Step 2: Valid status transition
+  const validStatuses = ["ACTIVE", "LIQUIDATION_ONLY", "CLOSED"];
+  if (!validStatuses.includes(status)) {
+    throw new EngineValidationError(
+      "INVALID_STATUS",
+      "INV-STATE-002",
+      `Invalid status '${status}'. Must be one of: ${validStatuses.join(", ")}`
+    );
+  }
+
+  // Step 3: Prevent invalid state transitions
+  const currentStatus = state.account.status;
+  if (currentStatus === "CLOSED") {
+    throw new EngineValidationError(
+      "TRANSITION_INVALID",
+      "INV-STATE-002",
+      `Cannot change status of CLOSED account`
+    );
+  }
+
+  // Step 4: Admin metadata
+  if (!adminUserId) {
+    throw new EngineValidationError(
+      "INVALID_EVENT",
+      "INV-STATE-005",
+      "Admin user ID required for UPDATE_ACCOUNT_STATUS"
+    );
+  }
+}
+
+/**
+ * validateUpdatePolicies — EVENT-SPECIFIC VALIDATION
+ */
+function validateUpdatePolicies(
+  state: EngineState,
+  event: any
+): void {
+  const { accountId, policies, adminUserId } = event;
+
+  // Step 1: Account exists
+  if (!state.account || state.account.accountId !== accountId) {
+    throw new EngineValidationError(
+      "ACCOUNT_NOT_FOUND",
+      "INV-DATA-001",
+      `Account ${accountId} does not match engine state`
+    );
+  }
+
+  // Step 2: Policies object is not empty
+  if (!policies || Object.keys(policies).length === 0) {
+    throw new EngineValidationError(
+      "INVALID_EVENT",
+      "INV-STATE-004",
+      "Policies object cannot be empty"
+    );
+  }
+
+  // Step 3: Validate individual policy fields if present
+  if (policies.maxPositions !== undefined && policies.maxPositions <= 0) {
+    throw new EngineValidationError(
+      "INVALID_POLICY",
+      "INV-STATE-004",
+      "maxPositions must be positive"
+    );
+  }
+
+  if (policies.maxLeverageOverride !== undefined && policies.maxLeverageOverride <= 0) {
+    throw new EngineValidationError(
+      "INVALID_POLICY",
+      "INV-STATE-004",
+      "maxLeverageOverride must be positive"
+    );
+  }
+
+  // Step 4: Admin metadata
+  if (!adminUserId) {
+    throw new EngineValidationError(
+      "INVALID_EVENT",
+      "INV-STATE-005",
+      "Admin user ID required for UPDATE_POLICIES"
+    );
+  }
+}
+
 export function validateEvent(
   state: EngineState,
   event: EngineEvent
@@ -312,9 +770,38 @@ export function validateEvent(
     case "UPDATE_PRICES":
       validateUpdatePrices(state, event);
       break;
-    default:
-      // Other event types will be implemented in future phases
-      // For now, accept them (graceful degradation)
+    case "ADD_FUNDS":
+      validateAddFunds(state, event);
       break;
+    case "REMOVE_FUNDS":
+      validateRemoveFunds(state, event);
+      break;
+    case "ADD_BONUS":
+      validateAddBonus(state, event);
+      break;
+    case "REMOVE_BONUS":
+      validateRemoveBonus(state, event);
+      break;
+    case "SET_STOP_LOSS":
+      validateSetStopLoss(state, event);
+      break;
+    case "SET_TAKE_PROFIT":
+      validateSetTakeProfit(state, event);
+      break;
+    case "CANCEL_PENDING":
+      validateCancelPending(state, event);
+      break;
+    case "UPDATE_ACCOUNT_STATUS":
+      validateUpdateAccountStatus(state, event);
+      break;
+    case "UPDATE_POLICIES":
+      validateUpdatePolicies(state, event);
+      break;
+    default:
+      throw new EngineValidationError(
+        "UNKNOWN_EVENT_TYPE",
+        "INV-DATA-002",
+        `Unknown event type: ${(event as any).type}`
+      );
   }
 }

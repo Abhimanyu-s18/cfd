@@ -16,7 +16,6 @@
 import { EngineState } from "../state/EngineState";
 import { EngineResult } from "./executeEvent";
 import { calculateMarginRequired } from "../domain/calculations/margin";
-import { calculateUnrealizedPnL } from "../domain/calculations/pnl";
 import { PositionState } from "../state/PositionState";
 import { AccountState } from "../state/AccountState";
 
