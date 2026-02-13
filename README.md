@@ -7,10 +7,17 @@ A comprehensive Contracts for Difference (CFD) trading platform with a determini
 ```
 cfd/
 ├── docs/                    # 📚 All project documentation (organized by category)
+│   ├── setup/              # Setup & initialization guides
+│   ├── blueprints/         # Blueprint planning & integration
+│   ├── guides/             # Operational guides & checklists
+│   ├── status/             # Project status & milestones
+│   ├── validation/         # Validation & testing
+│   ├── reference/          # Technical reference
 │   ├── architecture/        # System design & requirements
 │   ├── engine-specs/        # Engine specifications & contracts
 │   ├── testing/            # Test documentation & results
-│   └── deliverables/       # Project deliverables & status
+│   ├── deliverables/       # Project deliverables & status
+│   └── legal/              # Legal documents
 ├── engine/                 # 🔧 Core engine implementation
 │   ├── domain/            # Domain logic & calculations
 │   ├── effects/           # Side effects management
@@ -29,12 +36,19 @@ cfd/
 
 All project documentation has been organized into the `docs/` directory for better maintainability:
 
+- **[Setup](./docs/setup/)** - Getting started, installation, and initialization guides
+- **[Blueprints](./docs/blueprints/)** - Blueprint planning and integration documentation
+- **[Guides](./docs/guides/)** - Operational guides and daily checklists
+- **[Status](./docs/status/)** - Project status, milestones, and action plans
+- **[Validation](./docs/validation/)** - Validation results, testing, and quality assurance
+- **[Reference](./docs/reference/)** - Technical reference and specifications
 - **[Architecture](./docs/architecture/)** - System design, requirements, and UX specifications
 - **[Engine Specs](./docs/engine-specs/)** - Core engine specifications, contracts, and invariants
 - **[Testing](./docs/testing/)** - Golden path tests and test execution documentation
 - **[Deliverables](./docs/deliverables/)** - Project options completion status and reports
+- **[Legal](./docs/legal/)** - Legal documents and disclosures
 
-Start with [docs/architecture/Technical_Architecture_Document.md](./docs/architecture/Technical_Architecture_Document.md) for an overview of the system.
+Start with [docs/README.md](./docs/README.md) for a complete navigation guide, or begin with [docs/setup/SUPABASE_QUICK_START.md](./docs/setup/SUPABASE_QUICK_START.md) for a quick start.
 
 ## Getting Started
 
@@ -81,10 +95,17 @@ For detailed architecture information, see [docs/architecture/](./docs/architect
 
 ### Adding Documentation
 Place new documentation in the appropriate subdirectory under `docs/`:
+- Setup & Getting Started → `docs/setup/`
+- Blueprint Planning → `docs/blueprints/`
+- Operational Guides → `docs/guides/`
+- Project Status → `docs/status/`
+- Validation & Testing → `docs/validation/`
+- Technical Reference → `docs/reference/`
 - Architecture/requirements → `docs/architecture/`
 - Engine specifications → `docs/engine-specs/`
 - Testing & test results → `docs/testing/`
 - Completion reports & status → `docs/deliverables/`
+- Legal documents → `docs/legal/`
 
 See [docs/README.md](./docs/README.md) for the full documentation structure and guidelines.
 

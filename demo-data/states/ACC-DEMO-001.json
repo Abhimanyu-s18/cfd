@@ -1,0 +1,16 @@
+{
+  "account": {
+    "accountId": "ACC-DEMO-001",
+    "balance": 5000,
+    "bonus": 0,
+    "equity": 5000,
+    "marginUsed": 100,
+    "freeMargin": 4900,
+    "marginLevel": 5000,
+    "status": "ACTIVE",
+    "maxPositions": 10,
+    "createdAt": "2026-02-12T21:17:17.885Z"
+  },
+  "positions": {},
+  "markets": {}
+}

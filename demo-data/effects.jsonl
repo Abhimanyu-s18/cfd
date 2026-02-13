@@ -1,0 +1,8 @@
+{"type":"PositionOpened","positionId":"POS-001","margin":100,"equity":5000}
+{"type":"AUDIT_RECORD_CREATED","reference":"ACC-DEMO-001","action":"PositionOpened","timestamp":"2026-02-12T21:17:17.885Z"}
+{"type":"PricesUpdated","prices":[{"marketId":"EUR/USD","currentPrice":110}],"timestamp":"2026-02-12T21:17:17.887Z"}
+{"type":"AUDIT_RECORD_CREATED","reference":"ACC-DEMO-001","action":"PricesUpdated","timestamp":"2026-02-12T21:17:17.887Z"}
+{"type":"AUDIT_RECORD_CREATED","reference":"ACC-FILE","action":"FILE_TEST","timestamp":"2026-02-12T21:34:42.693Z"}
+{"type":"AUDIT_RECORD_CREATED","reference":"ACC-FILE","action":"FILE_TEST","timestamp":"2026-02-12T21:34:53.437Z"}
+{"type":"AUDIT_RECORD_CREATED","reference":"ACC-FILE","action":"FILE_TEST","timestamp":"2026-02-12T21:35:57.398Z"}
+{"type":"AUDIT_RECORD_CREATED","reference":"ACC-FILE","action":"FILE_TEST","timestamp":"2026-02-12T21:38:23.971Z"}

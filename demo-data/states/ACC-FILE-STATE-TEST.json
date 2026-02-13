@@ -1,0 +1,16 @@
+{
+  "account": {
+    "accountId": "ACC-FILE-STATE-TEST",
+    "balance": 3000,
+    "bonus": 0,
+    "equity": 3000,
+    "marginUsed": 0,
+    "freeMargin": 3000,
+    "marginLevel": null,
+    "status": "ACTIVE",
+    "maxPositions": 10,
+    "createdAt": "2026-02-12T21:38:23.972Z"
+  },
+  "positions": {},
+  "markets": {}
+}

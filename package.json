@@ -9,12 +9,22 @@
     "test:coverage": "jest --coverage",
     "test:golden-paths": "jest --testPathPattern=golden-path",
     "build": "tsc",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "supabase:setup": "bash scripts/setup-supabase-complete.sql",
+    "supabase:deploy": "bash scripts/deploy-supabase.sh",
+    "supabase:auth": "bash scripts/setup-supabase-auth.sh",
+    "supabase:functions:serve": "supabase functions serve",
+    "supabase:functions:deploy": "supabase functions deploy",
+    "supabase:db:push": "supabase db push",
+    "supabase:status": "supabase status",
+    "supabase:logs": "supabase functions logs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "@supabase/supabase-js": "^2.95.3"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.8",
     "@types/node": "^20.10.6",
